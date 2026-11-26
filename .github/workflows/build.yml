@@ -62,7 +62,7 @@ jobs:
       - name: Publish log to ci-logs
         if: always()
         run: |
-          tail -n 250 build-${{ matrix.mc }}.log > tail.log || echo "no log" > tail.log
+          (grep -B1 -A4 -E 'error:|What went wrong|Could not' build-${{ matrix.mc }}.log | head -n 150; echo ======; tail -n 40 build-${{ matrix.mc }}.log | cut -c1-200) > tail.log || echo "no log" > tail.log
           git config user.name ci; git config user.email ci@example.com
           rm -rf /tmp/logs; git clone --depth 1 --branch ci-logs "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" /tmp/logs 2>/dev/null || (mkdir /tmp/logs && cd /tmp/logs && git init -q && git checkout -q -b ci-logs && git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git")
           cd /tmp/logs
