@@ -21,8 +21,18 @@ jobs:
       - uses: actions/checkout@v4
       - name: Unpack project zip
         run: |
-          if [ -f friend-forge-repo.zip ]; then unzip -oq friend-forge-repo.zip -x '.github/*'; fi
-          ls
+          echo "--- repo root:"; ls -la
+          Z=$(ls friend-forge-repo*.zip 2>/dev/null | head -1)
+          if [ -z "$Z" ]; then Z=$(find . -iname 'friend-forge-repo*.zip' | head -1); fi
+          echo "zip: $Z"
+          if [ -n "$Z" ]; then unzip -oq "$Z" -x '.github/*'; fi
+          if [ ! -d forge-1.20.1 ]; then
+            D=$(dirname "$(find . -type d -name forge-1.20.1 | head -1)" 2>/dev/null)
+            echo "project dir guess: $D"
+            if [ -n "$D" ] && [ "$D" != "." ]; then cp -r "$D"/. . ; fi
+          fi
+          echo "--- after unpack:"; ls -la
+          test -d forge-1.20.1 || { echo "PROJECT FILES NOT FOUND"; find . -maxdepth 3 -not -path './.git/*' | head -60; exit 1; }
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
